@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div>
+    <input type="text" id="textInput" placeholder="Text Color (HEX)">
+    <button class="button-3" onclick="changeColor()">Apply Text Color</button>
+  </div>
+  
+  <div>
+    <input type="text" id="bgInput" placeholder="BG Color (HEX)">
+    <button class="button-3" onclick="changeBGColor()">Apply BG Color</button>
+  </div>
+
+  <canvas id="matrix"></canvas>
+
+  <script>
+    const matrixCanvas = document.createElement('canvas');
+    document.body.appendChild(matrixCanvas);
+    const matrixContext = matrixCanvas.getContext('2d');
+
+    matrixCanvas.style.position = 'fixed';
+    matrixCanvas.style.top = '0';
+    matrixCanvas.style.left = '0';
+    matrixCanvas.style.pointerEvents = 'none';
+    matrixCanvas.style.zIndex = '-1';
+
+    matrixCanvas.width = window.innerWidth;
+    matrixCanvas.height = window.innerHeight;
+
+    const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const fontSize = 20;
+    const columns = matrixCanvas.width / fontSize;
+    const drops = [];
+
+    for (let i = 0; i < columns; i++) {
+      drops[i] = 1;
+    }
+
+    function drawMatrix() {
+      matrixContext.fillStyle = getComputedStyle(document.body).getPropertyValue('--matrix-bg');
+      matrixContext.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+      matrixContext.fillStyle = getComputedStyle(document.body).getPropertyValue('--matrix-color');
+      matrixContext.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = characters[Math.floor(Math.random() * characters.length)];
+        matrixContext.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+
+        drops[i]++;
+      }
+    }
+
+    function updateMatrix() {
+      drawMatrix();
+      requestAnimationFrame(updateMatrix);
+    }
+
+    function changeColor() {
+      const textInput = document.getElementById('textInput');
+      let newColor = textInput.value.trim();
+      if (newColor && newColor[0] !== '#') {
+        newColor = '#' + newColor;
+      }
+      document.body.style.setProperty('--matrix-color', newColor);
+    }
+
+		function changeBGColor() {
+			const bgInput = document.getElementById('bgInput');
+			let newBGColor = bgInput.value.trim();
+
+			newBGColor = newBGColor.replace(/^#/, '');
+
+			const length = newBGColor.length;
+
+			let r, g, b;
+			if (length === 3) {
+				r = parseInt(newBGColor[0] + newBGColor[0], 16);
+				g = parseInt(newBGColor[1] + newBGColor[1], 16);
+				b = parseInt(newBGColor[2] + newBGColor[2], 16);
+			} else if (length === 6) {
+				r = parseInt(newBGColor.slice(0, 2), 16);
+				g = parseInt(newBGColor.slice(2, 4), 16);
+				b = parseInt(newBGColor.slice(4, 6), 16);
+			} else {
+				r = 0;
+				g = 0;
+				b = 0;
+			}
+
+			const rgbaBGColor = `rgba(${r || 0}, ${g || 0}, ${b || 0}, 0.06)`;
+
+			document.body.style.setProperty('--matrix-bg', rgbaBGColor);
+		}
+
+    updateMatrix();
+  </script>
+</body>
+</html>
